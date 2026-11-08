@@ -13,8 +13,7 @@ service cloud.firestore {
     
     function isAdmin() {
       return isAuthenticated() && 
-        (request.auth.token.role == 'admin' || 
-         request.auth.token.email == 'admin@nextgen.edu' ||
+        (request.auth.token.admin == true || 
          exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
     }
 
@@ -59,12 +58,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
-    // User profile documents: students can read/write their own profile, cannot modify role
+    // User profile documents: strictly owner-scoped reads/updates, students cannot modify role or elevate to admin
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.role == 'student';
-      allow update: if isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
-      allow write: if isAdmin();
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.role == 'student' && (!('admin' in request.resource.data) || request.resource.data.admin != true);
+      allow update: if (isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'admin']))) || isAdmin();
+      allow delete: if isAdmin();
     }
     
     // User progress: strictly owner-scoped

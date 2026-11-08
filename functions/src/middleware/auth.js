@@ -20,7 +20,8 @@ function requireAuth(request) {
 
 /**
  * Validates that the caller is a verified administrator.
- * Enforces server-side role check; students cannot self-assign this role.
+ * Enforces server-side custom claim check: request.auth.token.admin === true.
+ * Students cannot self-assign this claim.
  * @param {object} request - Firebase Functions v2 CallableRequest.
  * @return {object} Verified admin user info.
  */
@@ -28,10 +29,7 @@ function requireAdmin(request) {
   const user = requireAuth(request);
   const token = user.token;
 
-  const isExplicitAdminClaim = token.admin === true || token.role === "admin";
-  const isDesignatedAdminEmail = token.email === "admin@nextgen.edu";
-
-  if (!isExplicitAdminClaim && !isDesignatedAdminEmail) {
+  if (token.admin !== true) {
     throw permissionDenied("Administrative privileges required.");
   }
 

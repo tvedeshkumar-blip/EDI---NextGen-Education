@@ -145,7 +145,7 @@ describe("Phase 1: Backend Foundation Tests", () => {
       assert.equal(adminUser.uid, "admin-789");
     });
 
-    it("should allow verified admin with admin email", () => {
+    it("should reject admin email when admin claim is absent", () => {
       const mockReq = {
         auth: {
           uid: "admin-001",
@@ -153,8 +153,22 @@ describe("Phase 1: Backend Foundation Tests", () => {
         },
       };
 
-      const adminUser = requireAdmin(mockReq);
-      assert.equal(adminUser.uid, "admin-001");
+      assert.throws(() => requireAdmin(mockReq), {
+        code: "permission-denied",
+      });
+    });
+
+    it("should reject token.role=admin when admin claim is absent", () => {
+      const mockReq = {
+        auth: {
+          uid: "attacker-002",
+          token: {role: "admin"},
+        },
+      };
+
+      assert.throws(() => requireAdmin(mockReq), {
+        code: "permission-denied",
+      });
     });
 
     it("extractUser should return null for unauthenticated requests", () => {
