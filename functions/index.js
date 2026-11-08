@@ -1,4 +1,4 @@
-const {setGlobalOptions} = require("firebase-functions");
+const { setGlobalOptions } = require("firebase-functions");
 
 // Limit the maximum number of function instances.
-setGlobalOptions({maxInstances: 10});
+setGlobalOptions({ maxInstances: 10 });
