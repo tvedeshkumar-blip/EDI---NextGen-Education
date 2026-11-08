@@ -1,0 +1,23 @@
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Allow authenticated users to access only their own files.
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+
+    // Allow authorized administrators to access admin resources.
+    match /admin/{allPaths=**} {
+      allow read, write: if request.auth != null
+                         && (
+                           request.auth.token.role == 'admin'
+                           || request.auth.token.email == 'admin@nextgen.edu'
+                         );
+    }
+
+  }
+}
