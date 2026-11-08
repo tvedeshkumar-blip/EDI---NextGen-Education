@@ -331,6 +331,21 @@ describe("Firestore Security Rules Verification", () => {
       assert.equal(allowed, false);
     });
 
+    it("should reject admin access even if /admins/{uid} doc exists when admin: true custom claim is absent", () => {
+      const userWithAdminsDocOnly = {
+        uid: "registry-only-uid",
+        email: "revoked-admin@nextgen.edu",
+        token: {}, // Lacks admin: true claim
+        hasAdminsCollectionDoc: true
+      };
+      const allowed = evaluateUserRules({
+        operation: "read",
+        auth: userWithAdminsDocOnly,
+        targetUserId: studentUid
+      });
+      assert.equal(allowed, false);
+    });
+
     it("should allow student to create their own profile with role='student'", () => {
       const allowed = evaluateUserRules({
         operation: "create",
